@@ -1,0 +1,70 @@
+# Git and version control
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+*.md
+doc/
+docs/
+
+# Development tools and configs
+.vscode/
+.cursor/
+.idea/
+*.log
+.DS_Store
+Thumbs.db
+
+# Node.js and package managers
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn
+
+# Environment and secrets
+.env*
+!.env.example
+
+# Build outputs and caches
+dist/
+build/
+.cache/
+.tmp/
+temp/
+
+# Docker related
+Dockerfile*
+docker-compose*.yml
+docker-compose*.yaml
+.dockerignore
+
+# Taskmaster files
+.taskmaster/
+
+# Runtime data
+data/
+logs/
+*.pid
+*.pid.lock
+
+# Testing and coverage
+coverage/
+.nyc_output/
+test/
+tests/
+__tests__/
+*.test.js
+*.spec.js
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db 

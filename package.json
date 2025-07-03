@@ -1,0 +1,38 @@
+{
+  "name": "elizaos-production-deployment",
+  "version": "1.0.0",
+  "description": "Production-ready ElizaOS deployment for Coolify",
+  "private": true,
+  "scripts": {
+    "start": "elizaos start",
+    "health": "bun scripts/healthcheck.js",
+    "pm2:start": "./scripts/start-elizaos.sh",
+    "pm2:stop": "./scripts/stop-elizaos.sh",
+    "pm2:status": "./scripts/status-elizaos.sh"
+  },
+  "dependencies": {
+    "@elizaos/cli": "^1.0.16",
+    "@elizaos/core": "latest",
+    "@elizaos/plugin-bootstrap": "latest",
+    "@elizaos/plugin-openai": "latest",
+    "pm2": "^5.4.3",
+    "socket.io-client": "^4.8.1"
+  },
+  "engines": {
+    "node": ">=23.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bealers/eliza-coolify"
+  },
+  "keywords": [
+    "elizaos",
+    "ai",
+    "agent",
+    "docker",
+    "coolify",
+    "production"
+  ],
+  "author": "ElizaOS Production Deployment",
+  "license": "MIT"
+}

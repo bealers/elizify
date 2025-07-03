@@ -1,0 +1,144 @@
+services:
+  # ElizaOS Production Service
+  eliza:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: elizaos-prod
+    restart: unless-stopped
+    ports:  
+      - "50000-50100:50000-50100/udp"
+    expose:
+      - "3000"
+    
+    environment:
+      # Core Configuration
+      NODE_ENV: ${NODE_ENV:-production}
+      API_PORT: ${API_PORT:-3000}
+      PORT: "3000"
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      HOST: "0.0.0.0"
+      
+      # elizaOS Configuration
+      SENTRY_LOGGING: ${SENTRY_LOGGING:-false}
+      SENTRY_DSN: ${SENTRY_DSN}
+      ELIZA_UI_ENABLE: ${ELIZA_UI_ENABLE}
+      ELIZA_SERVER_AUTH_TOKEN: ${ELIZA_SERVER_AUTH_TOKEN}
+      
+      # Coolify magic environment variable for port detection
+      SERVICE_FQDN_ELIZA_3000: ""
+      
+      # Database Configuration (Internal)
+      POSTGRES_URL: postgresql://eliza:eliza_secure_password@db:5432/eliza
+      CHARACTER_FILE: ${CHARACTER_FILE:-/app/config/characters/server-bod.character.json}
+      STATIC_PATH: ./node_modules/@elizaos/cli/dist
+      
+      # AI Providers
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      
+      # Performance & CORS
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      CORS_CREDENTIALS: ${CORS_CREDENTIALS:-false}
+      MAX_MEMORY_USAGE: ${MAX_MEMORY_USAGE:-2048}
+      
+      RATE_LIMIT_REQUESTS: ${RATE_LIMIT_REQUESTS:-100}
+      RATE_LIMIT_WINDOW: ${RATE_LIMIT_WINDOW:-900000}
+      
+      # Extended Application Settings
+      USE_CHARACTER_STORAGE: ${USE_CHARACTER_STORAGE:-true}
+      CONVERSATION_MEMORY_LIMIT: ${CONVERSATION_MEMORY_LIMIT:-50}
+      
+      # WebSocket Configuration
+      WS_HEARTBEAT_INTERVAL: ${WS_HEARTBEAT_INTERVAL:-30000}
+      WS_CONNECTION_TIMEOUT: ${WS_CONNECTION_TIMEOUT:-60000}
+      
+      # Debug Options (disabled in production)
+      DEBUG: ${DEBUG:-false}
+      VERBOSE_LOGGING: ${VERBOSE_LOGGING:-false}
+      ENABLE_TRACE: ${ENABLE_TRACE:-false}
+    
+    volumes:
+      # Persistent data storage
+      - eliza_data:/app/data
+      - eliza_logs:/app/logs
+      # Character files (optional - mount your characters directory)
+      - ./config/characters:/app/characters:ro
+    
+    depends_on:
+      db:
+        condition: service_healthy
+    
+    # Resource limits for production
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    
+    # Health check - check if the server is responding
+    healthcheck:
+      test: ["CMD", "bun", "/app/scripts/healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # Coolify auto-detection magic
+    labels:
+      - "coolify.managed=true"
+
+  # PostgreSQL Database
+  db:
+    image: ankane/pgvector:latest
+    container_name: elizaos-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: eliza
+      POSTGRES_USER: eliza
+      POSTGRES_PASSWORD: eliza_secure_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Copy the init script instead of mounting as volume to avoid directory issues
+      - ./db/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    
+    # PostgreSQL port (for local development)
+    ports:
+      - "5432:5432"
+    
+    # Health check for database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eliza -d eliza"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+volumes:
+  eliza_data:
+    driver: local
+  eliza_logs:
+    driver: local
+  postgres_data:
+    driver: local
