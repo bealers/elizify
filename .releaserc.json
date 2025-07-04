@@ -1,0 +1,101 @@
+{
+  "branches": ["main"],
+  "repositoryUrl": "https://github.com/bealers/elizify.git",
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "releaseRules": [
+          {"type": "feat", "scope": "major", "release": "major"},
+          {"type": "feat", "scope": "minor", "release": "minor"},
+          {"type": "feat", "release": "minor"},
+          {"type": "fix", "scope": "critical", "release": "patch"},
+          {"type": "fix", "scope": "security", "release": "patch"},
+          {"type": "perf", "release": "patch"},
+          {"type": "sync", "release": "patch"},
+          {"breaking": true, "release": "major"},
+          {"type": "docs", "release": false},
+          {"type": "style", "release": false},
+          {"type": "refactor", "release": false},
+          {"type": "test", "release": false},
+          {"type": "build", "release": false},
+          {"type": "ci", "release": false},
+          {"type": "chore", "release": false}
+        ]
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits",
+        "presetConfig": {
+          "types": [
+            {"type": "feat", "section": "Features"},
+            {"type": "fix", "section": "Bug Fixes"},
+            {"type": "perf", "section": "Performance"},
+            {"type": "sync", "section": "Updates"}
+          ]
+        }
+      }
+    ],
+    [
+      "./lib/semantic-release-sanitize.js",
+      {
+        "sanitizeScript": "./scripts/sanitize-configs.js",
+        "testScript": "./scripts/test-sanitized.js --test-level basic",
+        "publicDir": "public"
+      }
+    ],
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "public/CHANGELOG.md",
+        "changelogTitle": "# Elizify Changelog\n\nAll notable changes to **Elizify** will be documented in this file.\n\n*Elizify: deploy elizaOS anywhere*\n\n---\n\n"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["public/**/*"],
+        "message": "chore: release ${nextRelease.version}\\n\\n${nextRelease.notes}"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          {
+            "path": "public/docker-compose.yaml",
+            "name": "docker-compose.yaml",
+            "label": "Docker Compose (Full)"
+          },
+          {
+            "path": "public/docker-compose.slim.yaml", 
+            "name": "docker-compose.slim.yaml",
+            "label": "Docker Compose (Slim)"
+          },
+          {
+            "path": "public/Dockerfile",
+            "name": "Dockerfile", 
+            "label": "Dockerfile"
+          },
+          {
+            "path": "public/README.md",
+            "name": "README.md",
+            "label": "Documentation"
+          },
+          {
+            "path": "public/package.json",
+            "name": "package.json",
+            "label": "Package Configuration"
+          },
+          {
+            "path": "public/.env.example",
+            "name": ".env.example",
+            "label": "Environment Template"
+          }
+        ]
+      }
+    ]
+  ]
+} 
