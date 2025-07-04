@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/bealers/eliza-coolify"
+    "url": "https://github.com/bealers/elizify"
   },
   "keywords": [
     "elizaos",
@@ -33,6 +33,6 @@
     "coolify",
     "production"
   ],
-  "author": "ElizaOS Production Deployment",
+  "author": "elizify.dev",
   "license": "MIT"
 }

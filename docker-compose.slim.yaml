@@ -1,102 +1,75 @@
+# ███████╗██╗     ██╗███████╗██╗███████╗██╗   ██╗
+# ██╔════╝██║     ██║╚══███╔╝██║██╔════╝╚██╗ ██╔╝
+# █████╗  ██║     ██║  ███╔╝ ██║█████╗   ╚████╔╝ 
+# ██╔══╝  ██║     ██║ ███╔╝  ██║██╔══╝    ╚██╔╝  
+# ███████╗███████╗██║███████╗██║██║        ██║   
+# ╚══════╝╚══════╝╚═╝╚══════╝╚═╝╚═╝        ╚═╝   
+#
+# Deploy elizaOS anywhere
+# https://github.com/bealers/elizify
+#
 services:
-  # ElizaOS Production Service (External Database)  
-  eliza:
+  eliza-slim:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: elizaos-prod
+      target: slim  # Use slim build stage
+    container_name: elizaos-slim
     restart: unless-stopped
-    ports:  
-      - "50000-50100:50000-50100/udp"
-    expose:
-      - "3000"
-    
+    ports:
+      - "3000:3000"  # Slim environment port
+
     environment:
-      # Core Configuration
-      NODE_ENV: ${NODE_ENV:-production}
-      API_PORT: ${API_PORT:-3000}
-      PORT: "3000"
-      LOG_LEVEL: ${LOG_LEVEL:-info}
-      HOST: "0.0.0.0"
-      
-      # elizaOS Configuration
-      SENTRY_LOGGING: ${SENTRY_LOGGING:-false}
-      SENTRY_DSN: ${SENTRY_DSN}
-      ELIZA_UI_ENABLE: ${ELIZA_UI_ENABLE}
-      ELIZA_SERVER_AUTH_TOKEN: ${ELIZA_SERVER_AUTH_TOKEN}
-      
-      # Coolify magic environment variable for port detection
-      SERVICE_FQDN_ELIZA_3000: ""
-      
-      # Database Configuration (External)
-      POSTGRES_URL: ${POSTGRES_URL}
-      CHARACTER_FILE: ${CHARACTER_FILE:-/app/config/characters/server-bod.character.json}
-      STATIC_PATH: ./node_modules/@elizaos/cli/dist
-      
-      # AI Providers
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-      
-      # Performance & CORS
-      CORS_ORIGIN: ${CORS_ORIGIN:-*}
-      CORS_CREDENTIALS: ${CORS_CREDENTIALS:-false}
-      MAX_MEMORY_USAGE: ${MAX_MEMORY_USAGE:-2048}
-      
-      RATE_LIMIT_REQUESTS: ${RATE_LIMIT_REQUESTS:-100}
-      RATE_LIMIT_WINDOW: ${RATE_LIMIT_WINDOW:-900000}
-      
-      # Extended Application Settings
-      USE_CHARACTER_STORAGE: ${USE_CHARACTER_STORAGE:-true}
-      CONVERSATION_MEMORY_LIMIT: ${CONVERSATION_MEMORY_LIMIT:-50}
-      
-      # WebSocket Configuration
-      WS_HEARTBEAT_INTERVAL: ${WS_HEARTBEAT_INTERVAL:-30000}
-      WS_CONNECTION_TIMEOUT: ${WS_CONNECTION_TIMEOUT:-60000}
-      
-      # Debug Options (disabled in production)
-      DEBUG: ${DEBUG:-false}
-      VERBOSE_LOGGING: ${VERBOSE_LOGGING:-false}
-      ENABLE_TRACE: ${ENABLE_TRACE:-false}
-    
+      NODE_ENV: production
+      LOG_LEVEL: info
+      # ELIZA_UI_ENABLE: unset - auto-detects from NODE_ENV
+      POSTGRES_URL: ${POSTGRES_URL:-postgresql://eliza:eliza_password@localhost:5432/eliza}
+
+      # Authentication - Production default (secure by default, respects empty)
+      ELIZA_SERVER_AUTH_TOKEN: ${ELIZA_SERVER_AUTH_TOKEN-production-token}
+
+      # Additional configurable settings
+      HOST: 0.0.0.0
+      API_PORT: 3000
+      CHARACTER_FILE: /app/config/characters/server-bod.character.json
+
+      # Performance settings
+      MAX_MEMORY_USAGE: 1024
+      RATE_LIMIT_REQUESTS: 1000
+      RATE_LIMIT_WINDOW: 900000
+
     volumes:
-      # Persistent data storage
-      - eliza_data:/app/data
-      - eliza_logs:/app/logs
-      # Character files (optional - mount your characters directory)
+      - eliza_slim_data:/app/data
+      - eliza_slim_logs:/app/logs
       - ./config/characters:/app/characters:ro
-  
-    
-    # Resource limits for production
+
+    networks:
+      - elizaos_network
+
+    # Same resource limits as full target
     deploy:
       resources:
         limits:
-          memory: 4G
-          cpus: '2.0'
+          memory: 2G
+          cpus: '1.0'
         reservations:
-          memory: 1G
-          cpus: '0.5'
-    
-    # Health check - check if the server is responding
+          memory: 512M
+          cpus: '0.25'
+
     healthcheck:
-      test: ["CMD", "bun", "/app/scripts/healthcheck.js"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 90s
-    
-    # Logging configuration
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    
-    # Coolify auto-detection magic
-    labels:
-      - "coolify.managed=true"
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/agents"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
 
 volumes:
-  eliza_data:
+  eliza_slim_data:
     driver: local
-  eliza_logs:
+  eliza_slim_logs:
     driver: local
+
+networks:
+  elizaos_network:
+    name: elizaos_network
+    external: true

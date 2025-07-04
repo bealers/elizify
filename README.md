@@ -1,5 +1,7 @@
 # elizaOS Production Deployment
 
+[![Version](https://img.shields.io/badge/version-v0.1.1-blue.svg)](https://github.com/bealers/elizify/releases)
+
 Just Works™️ production-ready Docker deployment for [elizaOS](https://github.com/elizaOS/eliza) agents. Deploy anywhere Docker Compose is supported.
 
 Tested on [Coolify](https://coolify.io/), guides for other platforms on their way.
