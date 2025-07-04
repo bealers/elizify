@@ -1,3 +1,9 @@
+## [0.1.4](https://github.com/bealers/elizify/compare/v0.1.3...v0.1.4) (2025-07-04)
+
+### Updates
+
+* deployment configuration updates ([b554ff5](https://github.com/bealers/elizify/commit/b554ff5fc633ac237fa5d23fa3f0a0da8a1e4282))
+
 ## [0.1.3](https://github.com/bealers/elizify/compare/v0.1.2...v0.1.3) (2025-07-04)
 
 ### Updates

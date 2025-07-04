@@ -1,6 +1,6 @@
 {
   "name": "elizaos-production-deployment",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Production-ready ElizaOS deployment for Coolify",
   "private": true,
   "scripts": {
@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/bealers/elizify"
+    "url": "git+https://github.com/bealers/elizify.git"
   },
   "keywords": [
     "elizaos",
@@ -34,5 +34,10 @@
     "production"
   ],
   "author": "elizify.dev",
-  "license": "MIT"
+  "license": "MIT",
+  "main": "index.js",
+  "bugs": {
+    "url": "https://github.com/bealers/elizify/issues"
+  },
+  "homepage": "https://github.com/bealers/elizify#readme"
 }
