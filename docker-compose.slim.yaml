@@ -23,16 +23,15 @@ services:
     environment:
       NODE_ENV: production
       LOG_LEVEL: info
-      # ELIZA_UI_ENABLE: unset - auto-detects from NODE_ENV
       POSTGRES_URL: ${POSTGRES_URL:-postgresql://eliza:eliza_password@localhost:5432/eliza}
 
-      # Authentication - Production default (secure by default, respects empty)
-      ELIZA_SERVER_AUTH_TOKEN: ${ELIZA_SERVER_AUTH_TOKEN-production-token}
+      # Authentication and UI
+      ELIZA_SERVER_AUTH_TOKEN: ${ELIZA_SERVER_AUTH_TOKEN:-production-token}
+      ELIZA_UI_ENABLE: ${ELIZA_UI_ENABLE:-true}
 
-      # Additional configurable settings
       HOST: 0.0.0.0
       API_PORT: 3000
-      CHARACTER_FILE: ${CHARACTER_FILE:-/app/config/characters/server-bod.character.json}
+      CHARACTER_FILE: ${CHARACTER_FILE:-/app/config/characters/elliot.character.json}
 
       # Performance settings
       MAX_MEMORY_USAGE: 1024

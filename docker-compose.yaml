@@ -25,15 +25,17 @@ services:
     environment:
       NODE_ENV: production
       LOG_LEVEL: info
-      # ELIZA_UI_ENABLE: unset - auto-detects from NODE_ENV
 
       # Database connection
       POSTGRES_URL: postgresql://eliza:eliza_password@elizaos-db:5432/eliza
 
-      # Additional configurable settings
+      # Endpoint security
+      ELIZA_SERVER_AUTH_TOKEN: ${ELIZA_SERVER_AUTH_TOKEN:-production-token}
+      ELIZA_UI_ENABLE: ${ELIZA_UI_ENABLE:-true}
+
       HOST: 0.0.0.0
       API_PORT: 3000
-      CHARACTER_FILE: ${CHARACTER_FILE:-/app/config/characters/server-bod.character.json}
+      CHARACTER_FILE: ${CHARACTER_FILE:-/app/config/characters/elliot.character.json}
 
       # Performance settings
       MAX_MEMORY_USAGE: 1024
