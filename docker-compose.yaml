@@ -14,12 +14,14 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: elizaos
+    restart: unless-stopped
     ports:
       - "3000:3000"  # Full environment port
     depends_on:
       elizaos-db:
         condition: service_healthy
-
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
       LOG_LEVEL: info
@@ -31,7 +33,7 @@ services:
       # Additional configurable settings
       HOST: 0.0.0.0
       API_PORT: 3000
-      CHARACTER_FILE: /app/config/characters/server-bod.character.json
+      CHARACTER_FILE: ${CHARACTER_FILE:-/app/config/characters/server-bod.character.json}
 
       # Performance settings
       MAX_MEMORY_USAGE: 1024
@@ -41,7 +43,7 @@ services:
     volumes:
       - eliza_data:/app/data
       - eliza_logs:/app/logs
-      - ./config/characters:/app/characters:ro
+      - ./config/characters:/app/config/characters:ro
 
     networks:
       - elizaos_network
@@ -66,7 +68,7 @@ services:
     container_name: elizaos-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: eliza_test
+      POSTGRES_DB: eliza
       POSTGRES_USER: eliza
       POSTGRES_PASSWORD: eliza_password
       POSTGRES_INITDB_ARGS: --encoding=UTF-8
@@ -83,7 +85,7 @@ services:
       - elizaos_network
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U eliza -d eliza_test"]
+      test: ["CMD-SHELL", "pg_isready -U eliza -d eliza"]
       interval: 15s
       timeout: 5s
       retries: 5

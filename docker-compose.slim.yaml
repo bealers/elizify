@@ -18,7 +18,8 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"  # Slim environment port
-
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
       LOG_LEVEL: info
@@ -31,7 +32,7 @@ services:
       # Additional configurable settings
       HOST: 0.0.0.0
       API_PORT: 3000
-      CHARACTER_FILE: /app/config/characters/server-bod.character.json
+      CHARACTER_FILE: ${CHARACTER_FILE:-/app/config/characters/server-bod.character.json}
 
       # Performance settings
       MAX_MEMORY_USAGE: 1024
@@ -41,7 +42,7 @@ services:
     volumes:
       - eliza_slim_data:/app/data
       - eliza_slim_logs:/app/logs
-      - ./config/characters:/app/characters:ro
+      - ./config/characters:/app/config/characters:ro
 
     networks:
       - elizaos_network
@@ -72,4 +73,4 @@ volumes:
 networks:
   elizaos_network:
     name: elizaos_network
-    external: true
+    driver: bridge
