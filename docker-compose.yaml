@@ -100,4 +100,4 @@ volumes:
 networks:
   elizaos_network:
     name: elizaos_network
-    external: true
+    driver: bridge
