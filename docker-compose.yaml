@@ -26,7 +26,7 @@ services:
       # ELIZA_UI_ENABLE: unset - auto-detects from NODE_ENV
 
       # Database connection
-      POSTGRES_URL: postgresql://eliza:eliza_password@elizaos-db:5432/eliza_test
+      POSTGRES_URL: postgresql://eliza:eliza_password@elizaos-db:5432/eliza
 
       # Additional configurable settings
       HOST: 0.0.0.0
