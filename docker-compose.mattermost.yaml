@@ -94,6 +94,8 @@ services:
       MATTERMOST_BOT_USERNAME: elliot
       MATTERMOST_DEFAULT_CHANNEL: general
       POSTGRES_URL: postgres://mmuser:mmuser_password@postgres:5432/elizaos?sslmode=disable
+      ELIZA_SERVER_AUTH_TOKEN: ${ELIZA_SERVER_AUTH_TOKEN:-development-token}
+      ELIZA_UI_ENABLE: ${ELIZA_UI_ENABLE:-true}
       CHARACTER_FILE: /app/config/characters/elliot.character.json
     volumes:
       - elizaos_data:/app/data
