@@ -1,7 +1,7 @@
 {
-  "name": "elizaos-production-deployment",
-  "version": "0.1.4",
-  "description": "Production-ready ElizaOS deployment for Coolify",
+  "name": "elizify",
+  "version": "0.2.0",
+  "description": "elizaOS production deployment recipes",
   "private": true,
   "scripts": {
     "start": "elizaos start",
@@ -11,10 +11,13 @@
     "pm2:status": "./scripts/status-elizaos.sh"
   },
   "dependencies": {
-    "@elizaos/cli": "^1.0.16",
+    "@elizaos/cli": "^1.0.19",
     "@elizaos/core": "latest",
     "@elizaos/plugin-bootstrap": "latest",
     "@elizaos/plugin-openai": "latest",
+    "chalk": "^5.4.1",
+    "inquirer": "^12.7.0",
+    "ora": "^8.2.0",
     "pm2": "^5.4.3",
     "socket.io-client": "^4.8.1"
   },

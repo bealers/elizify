@@ -1,82 +1,73 @@
-# elizaOS Production Deployment
+# elizaOS Production Deployment Recipes
 
-[![Version](https://img.shields.io/badge/version-v0.1.3-blue.svg)](https://github.com/bealers/elizify/releases)
+[![Version](https://img.shields.io/badge/version-v0.2.0-blue.svg)](https://github.com/bealers/elizify/releases)
 [![Changelog](https://img.shields.io/badge/changelog-available-green.svg)](https://github.com/bealers/elizify/blob/main/CHANGELOG.md)
 
 Just Works™️ production-ready Docker deployment for [elizaOS](https://github.com/elizaOS/eliza) agents. Deploy anywhere Docker Compose is supported.
 
-Tested on [Coolify](https://coolify.io/), guides for other platforms on their way.
-
-**Project status:** Production ready! Web UI can now be cleanly disabled via `ELIZA_DISABLE_UI=true` environment variable (elizaOS 1.0.16+).
-
-## Quick Start
-
-1. **Fork this repo**
-2. **Set your API keys** in environment variables
-3. **Spin up containers** - Run `docker-compose up -d`
-
-Your elizaOS agent is running at `http://localhost:3000` with chat interface and ready to accept API connections.
-
 ## What's Included
 
 - **Non-root execution** - Runs as non-privileged user with sensible file permissions
-- **PostgreSQL by default** - Internal database included, external database support with slim config.
+- **PostgreSQL by default** - Properly configured with relevant extensions 
+- **BYO database** -  'slim' version also available
 - **PM2 process management** - Auto-restart on failure, 2GB memory limit, graceful shutdowns
 - **Health monitoring** - API health endpoints, PM2 status monitoring, structured logging
-- **Docker deployment** - Standard Docker Compose, works on any Docker based platform
+- **Docker deployment** - Standard Docker Compose
 
----
+## Getting Started
 
-## Platform Deployment
+```bash
+# Clone the repository
+git clone https://github.com/bealers/elizify.git
+cd elizify
 
-### Coolify (Tested)
+# Set up environment variables  
+cp .env.example .env
+# Edit .env with your API keys
 
-**Deployment with SSL and domain management**
+# Install dependencies
+bun install
+
+# Start the Mattermost demo 
+docker-compose -f docker-compose.mattermost.yaml up -d
+```
+
+Once Docker has loaded everything and config scripts have finished, you can visit:
+
+- elizaOS chat UI `http://localhost:8070`
+- Mattermost configured with our demo bot `http://localhost:8065`
+
+
+## CLI Recipe Launcher (Work in progress)
+
+For interactive deployment with various recipes, use the TUI:
+
+```bash
+# Make TUI executable
+chmod +x elizify.ts
+
+# Launch the TUI recipe launcher
+bun run tui
+
+# or
+./elizify.ts
+```
+
+**Available Recipes:**
+- **Mattermost** - Complete ElizaOS + Mattermost integration  (Working)
+- **Slim** - ElizaOS only (bring your own database)
+- **Standard** - ElizaOS + PostgreSQL with pgvector
+
+## Production Deployment
+
+Tested on [Coolify](https://coolify.io/)
 
 1. **New Project** → **Git Repository**
-2. **Repository URL**: `https://github.com/yourusername/your-fork`
+2. **Repository URL**: `https://github.com/bealers/elizify`
 3. **Build Pack**: Docker Compose
-4. **Compose File**: `docker-compose.yaml`
-5. **Environment Variables**: Set your API keys
+4. **Compose File**: `docker-compose[specifiy version].yaml`
+5. **Environment Variables**: Set your API keys manually
 6. **Deploy**
-
-
-**Optional: Disable Web UI**
-Set `ELIZA_DISABLE_UI=true` in your environment variables to run API-only mode.
-
-
----
-
-## Environment Configuration
-### Database Options
-
-**Internal PostgreSQL (Default)**
-```bash
-# Uses docker-compose.yaml - no configuration needed
-```
-
-**External PostgreSQL (Production)**
-```bash
-# Use docker-compose.slim.yaml
-POSTGRES_URL=postgresql://user:password@host:5432/database
-```
-
----
-
-## Character Configuration
-
-### Default Character
-Includes a throw-away character (`server-bod.character.json`) for immediate deployment testing.
-
-### Custom Characters
-1. **Create your character** following the [elizaOS character schema](https://eliza.how/docs/core/characterfile)
-2. **Place in** `config/characters/your-character.character.json`
-3. **Set environment**: `CHARACTER_FILE=/app/config/characters/your-character.character.json`
-4. **Restart deployment**
-
-**Character Development**: See [elizaOS Documentation](https://eliza.how/docs/core/characterfile) for detailed character creation guides.
-
----
 
 ## Management & Monitoring
 
@@ -86,75 +77,72 @@ Includes a throw-away character (`server-bod.character.json`) for immediate depl
 # Start/restart services
 docker-compose up -d
 
-# View logs in real-time
-docker-compose logs -f eliza
+# View ElizaOS logs
+docker-compose -f docker-compose.mattermost.yaml logs -f elizaos
 
-# Stop services
-docker-compose down
+# View Mattermost logs  (if relevant)
+docker-compose -f docker-compose.mattermost.yaml logs -f mattermost
+
+# Stop all services
+docker-compose -f docker-compose.mattermost.yaml down
 ```
 
 ### Agent Monitoring
 
 ```bash
-# Comprehensive status
-docker exec <container> ./scripts/status-elizaos.sh
+# Check ElizaOS status
+docker exec elizify-mattermost-elizaos ./scripts/status-elizaos.sh
 
-# Process monitoring
-docker exec <container> pm2 monit
+# Monitor ElizaOS process
+docker exec elizify-mattermost-elizaos pm2 monit
 
-# View agent logs
-docker exec <container> pm2 logs elizaos
+# View detailed logs
+docker exec elizify-mattermost-elizaos pm2 logs
 ```
-
-### Multi-Agent Scaling
-
-```bash
-# Deploy multiple agents with different configurations
-CHARACTER_FILE=/app/config/characters/discord-agent.character.json
-DISCORD_API_TOKEN=your-token
-docker-compose -p discord-agent up -d
-
-CHARACTER_FILE=/app/config/characters/telegram-agent.character.json
-TELEGRAM_BOT_TOKEN=your-token
-docker-compose -p telegram-agent up -d
-```
-
----
 
 ## Troubleshooting
 
 ### Quick Diagnostics
 
 ```bash
-# Check all services
-docker-compose ps
+# Check all services status
+docker-compose -f docker-compose.mattermost.yaml ps
 
-# View agent logs
-docker-compose logs eliza
+# Check ElizaOS container logs
+docker logs elizify-mattermost-elizaos --tail 50
 
-# Check agent process
-docker exec <container> pm2 list
+# Check Mattermost container logs  
+docker-compose -f docker-compose.mattermost.yaml logs mattermost
 
-# Validate configuration
-docker exec <container> ./scripts/status-elizaos.sh
+# Validate ElizaOS configuration
+docker exec elizify-mattermost-elizaos ./scripts/status-elizaos.sh
 ```
 
-### Monitoring
+### Database & Services
 
 ```bash
-# Resource usage
-docker stats <container>
+# Check PostgreSQL status
+docker exec elizify-postgres-1 pg_isready -U mmuser
 
-# Process monitoring
-docker exec <container> pm2 monit
+# Check Mattermost API
+curl -f http://localhost:8065/api/v4/system/ping
 
-# Database status
-docker exec <container> pg_isready -h db -p 5432
+# Check ElizaOS API
+curl -f http://localhost:8070/health
+```
+
+### Container Resource Monitoring
+
+```bash
+# Resource usage for ElizaOS
+docker stats elizify-mattermost-elizaos
+
+# Resource usage for all services
+docker-compose -f docker-compose.mattermost.yaml top
 ```
 
 ---
 
 ## Contributing
 
-Open to PRs and collaboration.
-
+Open to PRs.

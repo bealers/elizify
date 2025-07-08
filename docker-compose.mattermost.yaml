@@ -1,0 +1,145 @@
+# ███████╗██╗     ██╗███████╗██╗███████╗██╗   ██╗
+# ██╔════╝██║     ██║╚══███╔╝██║██╔════╝╚██╗ ██╔╝
+# █████╗  ██║     ██║  ███╔╝ ██║█████╗   ╚████╔╝ 
+# ██╔══╝  ██║     ██║ ███╔╝  ██║██╔══╝    ╚██╔╝  
+# ███████╗███████╗██║███████╗██║██║        ██║   
+# ╚══════╝╚══════╝╚═╝╚══════╝╚═╝╚═╝        ╚═╝   
+#
+# Deploy elizaOS anywhere - Mattermost Recipie
+# https://github.com/bealers/elizify
+#
+# Complete Mattermost + elizaOS demonstration environment
+# Includes: elizaOS Agent, Mattermost Server, PostgreSQL Database
+# Pre-configured with admin user, bot account, and demo company
+
+services:
+  # PostgreSQL 15 with vector extensions (ElizaOS standard)
+  postgres:
+    image: pgvector/pgvector:pg15
+    environment:
+      POSTGRES_USER: mmuser
+      POSTGRES_PASSWORD: mmuser_password
+      POSTGRES_DB: mattermost  # Create Mattermost database
+      POSTGRES_INITDB_ARGS: "--auth-host=md5"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init-mattermost.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5433:5432"
+    networks:
+      - mattermost-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mmuser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Use working Mattermost setup
+  mattermost:
+    image: mattermost/mattermost-team-edition:7.8
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MM_SQLSETTINGS_DRIVERNAME: postgres
+      MM_SQLSETTINGS_DATASOURCE: postgres://mmuser:mmuser_password@postgres:5432/mattermost?sslmode=disable&connect_timeout=10
+      MM_SERVICESETTINGS_SITEURL: http://localhost:8065
+      MM_TEAMSETTINGS_ENABLEOPENSERVER: true
+      MM_SERVICESETTINGS_ENABLEDEVELOPER: true
+      MM_PLUGINSETTINGS_ENABLEUPLOADS: true
+      MM_PLUGINSETTINGS_ALLOWINSECUREDOWNLOADURL: true
+      MM_SERVICESETTINGS_ALLOWCORSFROM: "*"
+      MM_SERVICESETTINGS_ENABLEBOTACCOUNTCREATION: true
+      MM_SERVICESETTINGS_ENABLEUSERACCESSTOKENS: true
+      MM_INSTALL_TYPE: docker
+      MM_LOGSETTINGS_ENABLECONSOLE: true
+      MM_LOGSETTINGS_CONSOLELEVEL: DEBUG
+    ports:
+      - "8065:8065"
+    networks:
+      - mattermost-network
+    volumes:
+      - mattermost_data:/mattermost/data
+      - mattermost_logs:/mattermost/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8065/"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  # ElizaOS with working configuration
+  elizaos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: elizify-mattermost-elizaos
+    restart: unless-stopped
+    ports:
+      - "8070:3000"
+    depends_on:
+      mattermost:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+      DEBUG: true
+      MATTERMOST_URL: http://mattermost:8065
+      MATTERMOST_HOST_EXTERNAL: mattermost
+      MATTERMOST_PORT: 8065
+      MATTERMOST_TEAM: elizify
+      MATTERMOST_BOT_USERNAME: elliot
+      MATTERMOST_DEFAULT_CHANNEL: general
+      POSTGRES_URL: postgres://mmuser:mmuser_password@postgres:5432/elizaos?sslmode=disable
+      CHARACTER_FILE: /app/config/characters/elliot.character.json
+    volumes:
+      - elizaos_data:/app/data
+      - elizaos_logs:/app/logs
+      - ./config/characters:/app/config/characters:ro
+    networks:
+      - mattermost-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Working init script
+  init:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: elizify-mattermost-init
+    depends_on:
+      mattermost:
+        condition: service_healthy
+    environment:
+      MATTERMOST_URL: http://mattermost:8065
+      MATTERMOST_TEAM: elizify
+      MATTERMOST_BOT_USERNAME: elliot
+      MATTERMOST_DEFAULT_CHANNEL: general
+      MATTERMOST_TOKEN: elizify-demo-bot-token-12345
+      ADMIN_EMAIL: demo-admin@example.com
+      ADMIN_PASSWORD: demo123!
+      PATH: "/root/.bun/bin:$PATH"
+    user: root
+    command: ["/root/.bun/bin/bun", "run", "/app/scripts/mattermost/init-mattermost-demo.ts"]
+    networks:
+      - mattermost-network
+    profiles:
+      - init
+
+networks:
+  mattermost-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mattermost_data:
+  mattermost_logs:
+  elizaos_data:
+  elizaos_logs: 
