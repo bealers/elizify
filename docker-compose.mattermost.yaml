@@ -5,21 +5,20 @@
 # ███████╗███████╗██║███████╗██║██║        ██║   
 # ╚══════╝╚══════╝╚═╝╚══════╝╚═╝╚═╝        ╚═╝   
 #
-# Deploy elizaOS anywhere - Mattermost Recipie
+# Deploy elizaOS anywhere - Mattermost Recipe
 # https://github.com/bealers/elizify
 #
-# Complete Mattermost + elizaOS demonstration environment
+# elizaOS + Mattermost demonstration environment
 # Includes: elizaOS Agent, Mattermost Server, PostgreSQL Database
 # Pre-configured with admin user, bot account, and demo company
 
 services:
-  # PostgreSQL 15 with vector extensions (ElizaOS standard)
-  postgres:
+    postgres:
     image: pgvector/pgvector:pg15
     environment:
       POSTGRES_USER: mmuser
       POSTGRES_PASSWORD: mmuser_password
-      POSTGRES_DB: mattermost  # Create Mattermost database
+      POSTGRES_DB: mattermost
       POSTGRES_INITDB_ARGS: "--auth-host=md5"
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -34,8 +33,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Use working Mattermost setup
-  mattermost:
+    mattermost:
     image: mattermost/mattermost-team-edition:7.8
     depends_on:
       postgres:
@@ -67,7 +65,6 @@ services:
       timeout: 10s
       retries: 10
 
-  # ElizaOS with working configuration
   elizaos:
     build:
       context: .
@@ -95,7 +92,7 @@ services:
       MATTERMOST_DEFAULT_CHANNEL: general
       POSTGRES_URL: postgres://mmuser:mmuser_password@postgres:5432/elizaos?sslmode=disable
       ELIZA_SERVER_AUTH_TOKEN: ${ELIZA_SERVER_AUTH_TOKEN:-development-token}
-      ELIZA_UI_ENABLE: ${ELIZA_UI_ENABLE:-true}
+      ELIZA_UI_ENABLE: ${ELIZA_UI_ENABLE:-false}
       CHARACTER_FILE: /app/config/characters/elliot.character.json
     volumes:
       - elizaos_data:/app/data
@@ -110,7 +107,7 @@ services:
       retries: 3
       start_period: 30s
 
-  # Working init script
+  # init db and mattermost
   init:
     build:
       context: .
