@@ -27,7 +27,7 @@ services:
       LOG_LEVEL: info
 
       # Database connection
-      POSTGRES_URL: postgresql://eliza:eliza_password@elizaos-db:5432/eliza
+      POSTGRES_URL: postgresql://eliza:eliza_password@elizaos-db:5432/eliza?sslmode=disable&connect_timeout=10
 
       # Endpoint security
       ELIZA_SERVER_AUTH_TOKEN: ${ELIZA_SERVER_AUTH_TOKEN:-production-token}
@@ -62,17 +62,17 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 120s
+      start_period: 60s
 
   elizaos-db:
-    image: ankane/pgvector:latest
+    image: pgvector/pgvector:pg15
     container_name: elizaos-db
     restart: unless-stopped
     environment:
       POSTGRES_DB: eliza
       POSTGRES_USER: eliza
       POSTGRES_PASSWORD: eliza_password
-      POSTGRES_INITDB_ARGS: --encoding=UTF-8
+      POSTGRES_INITDB_ARGS: "--auth-host=md5 --encoding=UTF-8"
       POSTGRES_MAX_CONNECTIONS: 200
 
     volumes:
@@ -86,11 +86,11 @@ services:
       - elizaos_network
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U eliza -d eliza && PGPASSWORD=eliza_password psql -U eliza -d eliza -c 'SELECT 1;'"]
-      interval: 15s
-      timeout: 10s
-      retries: 8
-      start_period: 45s
+      test: ["CMD-SHELL", "pg_isready -U eliza -d eliza"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 volumes:
   eliza_data:
