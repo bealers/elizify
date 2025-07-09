@@ -35,7 +35,7 @@ services:
 
       HOST: 0.0.0.0
       API_PORT: 3000
-      CHARACTER_FILE: ${CHARACTER_FILE:-/app/config/characters/elliot.character.json}
+      CHARACTER_FILE: ${CHARACTER_FILE:-/app/config/characters/server-bod.character.json}
 
       # Performance settings
       MAX_MEMORY_USAGE: 1024
