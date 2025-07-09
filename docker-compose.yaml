@@ -16,7 +16,7 @@ services:
     container_name: elizaos
     restart: unless-stopped
     ports:
-      - "3000:3000"  # Full environment port
+      - "3000:3000"
     depends_on:
       elizaos-db:
         condition: service_healthy
@@ -26,7 +26,6 @@ services:
       NODE_ENV: production
       LOG_LEVEL: info
 
-      # Database connection
       POSTGRES_URL: postgresql://eliza:eliza_password@elizaos-db:5432/eliza?sslmode=disable&connect_timeout=10
 
       # Endpoint security
@@ -69,10 +68,10 @@ services:
     container_name: elizaos-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: eliza
       POSTGRES_USER: eliza
       POSTGRES_PASSWORD: eliza_password
-      POSTGRES_INITDB_ARGS: "--auth-host=md5 --encoding=UTF-8"
+      POSTGRES_DB: eliza
+      POSTGRES_INITDB_ARGS: "--auth-host=md5"
       POSTGRES_MAX_CONNECTIONS: 200
 
     volumes:
@@ -86,7 +85,7 @@ services:
       - elizaos_network
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U eliza -d eliza"]
+      test: ["CMD-SHELL", "pg_isready -U eliza"]
       interval: 10s
       timeout: 5s
       retries: 5
