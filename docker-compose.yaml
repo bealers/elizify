@@ -32,7 +32,7 @@ services:
       # Endpoint security
       ELIZA_SERVER_AUTH_TOKEN: ${ELIZA_SERVER_AUTH_TOKEN:-production-token}
       ELIZA_UI_ENABLE: ${ELIZA_UI_ENABLE:-false}
-1
+
       HOST: 0.0.0.0
       API_PORT: 3000
       CHARACTER_FILE: ${CHARACTER_FILE:-/app/config/characters/elliot.character.json}
