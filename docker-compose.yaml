@@ -62,7 +62,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 120s
 
   elizaos-db:
     image: ankane/pgvector:latest
@@ -86,11 +86,11 @@ services:
       - elizaos_network
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U eliza -d eliza"]
+      test: ["CMD-SHELL", "pg_isready -U eliza -d eliza && PGPASSWORD=eliza_password psql -U eliza -d eliza -c 'SELECT 1;'"]
       interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
+      timeout: 10s
+      retries: 8
+      start_period: 45s
 
 volumes:
   eliza_data:
