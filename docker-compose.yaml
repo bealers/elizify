@@ -35,7 +35,7 @@ services:
 
       HOST: 0.0.0.0
       API_PORT: 3000
-      CHARACTER_FILE: ${CHARACTER_FILE:-/app/config/characters/server-bod.character.json}
+      CHARACTER_FILE: ${CHARACTER_FILE:-/app/config/characters/elliot.character.json}
 
       # Performance settings
       MAX_MEMORY_USAGE: 1024
@@ -45,7 +45,6 @@ services:
     volumes:
       - eliza_data:/app/data
       - eliza_logs:/app/logs
-      - ./config/characters:/app/config/characters:ro
 
     networks:
       - elizaos_network
@@ -59,11 +58,11 @@ services:
           cpus: '0.25'
 
     healthcheck:
-      test: ["CMD-SHELL", "ls -la /app/config/characters/ && test -f /app/config/characters/elliot.character.json && curl -f http://localhost:3000/api/agents || exit 1"]
-      interval: 15s
-      timeout: 5s
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
       retries: 5
-      start_period: 45s
+      start_period: 60s
 
   elizaos-db:
     image: ankane/pgvector:latest
