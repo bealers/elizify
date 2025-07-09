@@ -59,7 +59,7 @@ services:
           cpus: '0.25'
 
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/agents"]
+      test: ["CMD-SHELL", "ls -la /app/config/characters/ && test -f /app/config/characters/elliot.character.json && curl -f http://localhost:3000/api/agents || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5
